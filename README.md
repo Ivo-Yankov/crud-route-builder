@@ -50,6 +50,6 @@ sorted by the field "name" in ascending order.
 ``PUT /example-1/:id`` - Updates a document. The data is expected to be sent in the body. Only updates the provided fields.
 
 
-###Additional note
+### Additional note
 
 This module requires you to use `body-parser`. It won't work without it.
