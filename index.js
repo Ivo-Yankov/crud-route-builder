@@ -186,8 +186,7 @@ const buildRoutes = (Resource, Extensions = []) => {
 * @param method : String    - Accepted values are [get, post, put, delete]
 * @param route  : String    
 * @param func   : Function
- */
-}
+*/
 const Route = (method, route, func) => {
     return {
         method: method,
