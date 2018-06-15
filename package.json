@@ -1,0 +1,12 @@
+{
+  "name": "crud-route-builder",
+  "version": "1.0.0",
+  "description": "Creates routes for basic CRUD operations for the provided Mongoose models",
+  "main": "index.js",
+  "author": "Ivo Yankov",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.3",
+    "mongoose": "^5.1.5"
+  }
+}
