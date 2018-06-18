@@ -4,6 +4,12 @@ This is used to build simple routes for create/read/update/delete operations for
 ### Installation
 ``npm install crud-route-builder --save``
 
+### Usage
+
+```js
+router.use(basePath, buildRoutes(mongooseModel, [AdditionalRoutes]))
+```
+
 ### Example
 
 ```js
@@ -11,7 +17,7 @@ const express = require('express');
 const router = express.Router();
 const {buildRoutes, Route} = require('crud-route-builder');
 const Example1 = require('../models/Example1');
-const Example2 = require('../models/Example1');
+const Example2 = require('../models/Example2');
 
 const app = express();
 
@@ -49,6 +55,7 @@ sorted by the field "name" in ascending order.
 
 ``PUT /example-1/:id`` - Updates a document. The data is expected to be sent in the body. Only updates the provided fields.
 
+The same routes will be created for `/example-2` plus the additional `POST /example-2/custom-route`
 
 ### Additional note
 
