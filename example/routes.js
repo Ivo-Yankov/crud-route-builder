@@ -9,6 +9,12 @@ router.use('/items', buildRoutes(Item, {
         res.send("This is a custom route");
     })],
 
+    resourceModifier: (Resource, req, res) => {
+        let r = Resource;
+        r.resourceIsModified = true;
+        return r;
+    },
+
     before: [
         Route('get', '/all', (req, res, next) => {
             console.log('before get all');

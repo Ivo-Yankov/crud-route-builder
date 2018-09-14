@@ -35,60 +35,23 @@ const validateRoutes = (routes) => {
 };
 
 /**
- * Builds all routes for a given resource
- * The routes generated are:
- *      GET     /all
- *      GET     /single/:id
- *      PUT     /single/:id
- *      POST    /single/
- *      DELETE  /single/:id
+ * Returns an array of filtered resources
  *
- * @param Resource
- * @param args
- *              {
- *                  extensions: [Array] Enables the declaration of custom routes
- *                  before: [Array] Middleware that is run before the default functions. Same structure as extensions
- *                  after:  [Array] Middleware that is run after the default functions. Same structure as extensions
- *    }
- *
- * @returns {*}
+ * Accepted params:
+ *      _end    = NUMBER
+ *      _start  = NUMBER
+ *      _order  = DESC | ASC
+ *      _sort   = FIELD NAME
+ *      field   = value
  */
+const getAll = (Resource, args, sendResult = false) => {
+    const resourceModifier = args.resourceModifier || false;
 
-const buildRoutes = (Resource, args = {}) => {
-    const router = express.Router();
-
-    let extensions = args.extensions || [];
-    let before = args.before || [];
-    let after = args.after || [];
-
-    validateRoutes(extensions);
-    validateRoutes(before);
-    validateRoutes(after);
-
-    /**
-     * Custom routes are declared at the top to enable overwriting of the default routes
-     */
-    for (let i = 0; i < extensions.length; i++) {
-        let ex = extensions[i];
-        router[ex.method](ex.route, extractMiddleware(before, ex.method, ex.route), ex.function, extractMiddleware(after, ex.method, ex.route));
-    }
-
-    /**
-     * Returns an array of filtered resources
-     *
-     * Accepted params:
-     *      _end    = NUMBER
-     *      _start  = NUMBER
-     *      _order  = DESC | ASC
-     *      _sort   = FIELD NAME
-     *      field   = value
-     */
-
-    const getAllAfterMiddleware = extractMiddleware(after, 'get', '/all');
-    router.get('/all', extractMiddleware(before, 'get', '/all'), (req, res, next) => {
+    return (req, res, next) => {
         try {
+            let R = resourceModifier ? resourceModifier(Resource, req, res) : Resource;
             let filter = {};
-            let modelProps = Object.keys(Resource.schema.paths);
+            let modelProps = Object.keys(R.schema.paths);
             let filters = Object.keys(req.query).filter((param) => modelProps.includes(param));
 
             filters.forEach(f => {
@@ -110,7 +73,7 @@ const buildRoutes = (Resource, args = {}) => {
                 }
             });
 
-            let query = Resource.find(filter);
+            let query = R.find(filter);
 
             if (req.query._sort && req.query._order) {
                 if (req.query._order === 'ASC') {
@@ -129,89 +92,159 @@ const buildRoutes = (Resource, args = {}) => {
                         data = data.filter((o, i) => i >= req.query._start && i <= req.query._end);
                     }
 
-                    sendCrbResult(getAllAfterMiddleware, data, req, res, next);
+                    sendCrbResult(sendResult, data, req, res, next);
                 })
                 .catch(e => next(Err(400, e.message)));
         }
         catch (e) {
             next(e);
         }
-    }, getAllAfterMiddleware);
+    };
+};
 
-    /**
-     * Retrieves a single resource object with a given id
-     */
+/**
+ * Retrieves a single resource object with a given id
+ */
+const getSingle = (Resource, args, sendResult = false) => {
+    const resourceModifier = args.resourceModifier || false;
 
-    const getSingleAfterMiddleware = extractMiddleware(after, 'get', '/single/:id');
-    router.get('/single/:id', extractMiddleware(before, 'get', '/single/:id'), (req, res, next) => {
+    return (req, res, next) => {
         try {
-            Resource.findOne({_id: req.params.id}).exec()
+            let R = resourceModifier ? resourceModifier(Resource, req, res) : Resource;
+            R.findOne({_id: req.params.id}).exec()
                 .then((data) => {
-                    sendCrbResult(getSingleAfterMiddleware, data, req, res, next);
+                    sendCrbResult(sendResult, data, req, res, next);
                 })
                 .catch(e => next(Err(400, e.message)));
         }
         catch (e) {
             next(e);
         }
-    }, getSingleAfterMiddleware);
+    };
+};
 
-    /**
-     * Updates a single resource object with the provided fields-value pairs
-     */
+/**
+ * Updates a single resource object with the provided fields-value pairs
+ */
+const update = (Resource, args, sendResult = false) => {
+    const resourceModifier = args.resourceModifier || false;
 
-    const putAfterMiddleware = extractMiddleware(after, 'put', '/:id');
-    router.put('/:id', extractMiddleware(before, 'put', '/:id'), (req, res, next) => {
+    return (req, res, next) => {
         try {
-            Resource.findByIdAndUpdate(req.params.id, {$set: req.body}, {
+            let R = resourceModifier ? resourceModifier(Resource, req, res) : Resource;
+            R.findByIdAndUpdate(req.params.id, {$set: req.body}, {
                 new: true,
                 runValidators: true
             })
                 .then((data) => {
-                    sendCrbResult(putAfterMiddleware, data, req, res, next);
+                    sendCrbResult(sendResult, data, req, res, next);
                 })
                 .catch(e => next(Err(400, e.message)));
         }
         catch (e) {
             next(e);
         }
-    }, putAfterMiddleware);
+    };
+};
 
-    /**
-     * Creates a new resource object
-     */
-    const postAfterMiddleware = extractMiddleware(after, 'post', '/');
-    router.post('/', extractMiddleware(before, 'post', '/'), (req, res, next) => {
+/**
+ * Creates a new resource object
+ */
+const create = (Resource, args, sendResult = false) => {
+    const resourceModifier = args.resourceModifier || false;
+
+    return (req, res, next) => {
         try {
-            let resource = new Resource(req.body);
+            let R = resourceModifier ? resourceModifier(Resource, req, res) : Resource;
+            let resource = new R(req.body);
             resource.save()
                 .then((data) => {
-                    sendCrbResult(postAfterMiddleware, data, req, res, next);
+                    sendCrbResult(sendResult, data, req, res, next);
                 })
                 .catch(e => next(Err(400, e.message)));
         }
         catch (e) {
             next(e);
         }
-    }, postAfterMiddleware);
+    };
+};
 
-    /**
-     * Deletes a resource by id
-     */
-    const deleteAfterMiddleware = extractMiddleware(after, 'delete', '/:id');
-    router.delete('/:id', extractMiddleware(before, 'delete', '/:id'), (req, res, next) => {
+/**
+ * Deletes a resource by id
+ */
+const remove = (Resource, args, sendResult = false) => {
+    const resourceModifier = args.resourceModifier || false;
+
+    return (req, res, next) => {
         try {
-            Resource.find({_id: req.params.id}).remove().exec()
+            let R = resourceModifier ? resourceModifier(Resource, req, res) : Resource;
+            R.find({_id: req.params.id}).remove().exec()
                 .then((data) => {
-                    sendCrbResult(deleteAfterMiddleware, data, req, res, next);
+                    sendCrbResult(sendResult, data, req, res, next);
                 });
         }
         catch (e) {
             next(e);
         }
-    }, deleteAfterMiddleware);
+    };
+};
+
+/**
+ * Builds all routes for a given resource
+ * The routes generated are:
+ *      GET     /all
+ *      GET     /single/:id
+ *      PUT     /single/:id
+ *      POST    /single/
+ *      DELETE  /single/:id
+ *
+ * @param Resource
+ * @param args
+ *              {
+ *                  extensions: [Array] Enables the declaration of custom routes
+ *                  before: [Array] Middleware that is run before the default functions. Same structure as extensions
+ *                  after:  [Array] Middleware that is run after the default functions. Same structure as extensions
+ *                  resourceModifier: (Resource, req, res) => { ...; return Resource; }
+ *                                    A function for modifying the Resource object during runtime.
+ *    }
+ *
+ * @returns {*}
+ */
+const buildRoutes = function (Resource, args = {}) {
+    const router = express.Router();
+
+    let extensions = args.extensions || [];
+    let before = args.before || [];
+    let after = args.after || [];
+
+    validateRoutes(extensions);
+    validateRoutes(before);
+    validateRoutes(after);
+
+    /**
+     * Custom routes are declared at the top to enable overwriting of the default routes
+     */
+    for (let i = 0; i < extensions.length; i++) {
+        let ex = extensions[i];
+        router[ex.method](ex.route, extractMiddleware(before, ex.method, ex.route), ex.function, extractMiddleware(after, ex.method, ex.route));
+    }
+
+    const getAllAfterMiddleware = extractMiddleware(after, 'get', '/all');
+    router.get('/all', extractMiddleware(before, 'get', '/all'), getAll(Resource, args, getAllAfterMiddleware), getAllAfterMiddleware);
+
+    const getSingleAfterMiddleware = extractMiddleware(after, 'get', '/single/:id');
+    router.get('/single/:id', extractMiddleware(before, 'get', '/single/:id'), getSingle(Resource, args, getAllAfterMiddleware), getSingleAfterMiddleware);
+
+    const putAfterMiddleware = extractMiddleware(after, 'put', '/:id');
+    router.put('/:id', extractMiddleware(before, 'put', '/:id'), update(Resource, args, getAllAfterMiddleware), putAfterMiddleware);
+
+    const postAfterMiddleware = extractMiddleware(after, 'post', '/');
+    router.post('/', extractMiddleware(before, 'post', '/'), create(Resource, args, getAllAfterMiddleware), postAfterMiddleware);
+
+    const deleteAfterMiddleware = extractMiddleware(after, 'delete', '/:id');
+    router.delete('/:id', extractMiddleware(before, 'delete', '/:id'), remove(Resource, args, getAllAfterMiddleware), deleteAfterMiddleware);
 
     return router;
 };
 
-module.exports = {buildRoutes, Route};
+module.exports = {buildRoutes, Route, getAll, getSingle, update, create, remove};

@@ -10,7 +10,8 @@ This is used to build simple routes for create/read/update/delete operations for
 router.use(basePath, buildRoutes(mongooseModel, {
     extensions: [Routes],
     before: [Routes],
-    after: [Routes]
+    after: [Routes],
+    resourceModifier: (Resource, req, res) => { ...; return Resource; }
 }))
 ```
 
@@ -19,7 +20,20 @@ The `buildRoutes` function expects two parameters:
 `mongooseModel` - A Mongoose model object
 
 `args` - This is used to specify additional routes, overwrite existing ones, or add middleware before or after the default functions.
-The `args` object can have the following properties, all of which accept only arrays of the `Route` object: `extensions`, `before`, `after`.  
+The `args` object can have the following properties, all of which accept only arrays of the `Route` object: `extensions`, `before`, `after`.
+  
+`resourceModifier` is used to modify the `Resource` object during runtime.
+ It could be used for example in combination with the [mongo-tenant](https://www.npmjs.com/package/mongo-tenant) module,
+ to specify the tenancy.
+ 
+```js
+    router.use('/example-1', buildRoutes(Example1, {
+        resourceModifier: (Resource, req, res) => {
+            let modifiedResource = Resource.byTenant(req.tenancyId);
+            return modifiedResource;
+        }
+    }));
+```
 
 ### Example
 
@@ -82,6 +96,14 @@ The same routes will be created for `/example-2` plus the additional `POST /exam
 
 You can find a simple example app in the `example` folder. 
 
-### Additional note
+### Additional notes
+
+All CRUD functions are exposed and can be used where necessary: 
+
+```js
+    const {getSingle, getAll, create, update, remove} = require('crud-route-builder');
+```
+
+---
 
 This module requires you to use `body-parser`. It won't work without it.
