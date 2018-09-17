@@ -44,7 +44,7 @@ const validateRoutes = (routes) => {
  *      _sort   = FIELD NAME
  *      field   = value
  */
-const getAll = (Resource, args, sendResult = false) => {
+const getAll = (Resource, args = {}, dontSendResult = false) => {
     const resourceModifier = args.resourceModifier || false;
 
     return (req, res, next) => {
@@ -92,7 +92,7 @@ const getAll = (Resource, args, sendResult = false) => {
                         data = data.filter((o, i) => i >= req.query._start && i <= req.query._end);
                     }
 
-                    sendCrbResult(sendResult, data, req, res, next);
+                    sendCrbResult(dontSendResult, data, req, res, next);
                 })
                 .catch(e => next(Err(400, e.message)));
         }
@@ -105,7 +105,7 @@ const getAll = (Resource, args, sendResult = false) => {
 /**
  * Retrieves a single resource object with a given id
  */
-const getSingle = (Resource, args, sendResult = false) => {
+const getSingle = (Resource, args = {}, dontSendResult = false) => {
     const resourceModifier = args.resourceModifier || false;
 
     return (req, res, next) => {
@@ -113,7 +113,7 @@ const getSingle = (Resource, args, sendResult = false) => {
             let R = resourceModifier ? resourceModifier(Resource, req, res) : Resource;
             R.findOne({_id: req.params.id}).exec()
                 .then((data) => {
-                    sendCrbResult(sendResult, data, req, res, next);
+                    sendCrbResult(dontSendResult, data, req, res, next);
                 })
                 .catch(e => next(Err(400, e.message)));
         }
@@ -126,7 +126,7 @@ const getSingle = (Resource, args, sendResult = false) => {
 /**
  * Updates a single resource object with the provided fields-value pairs
  */
-const update = (Resource, args, sendResult = false) => {
+const update = (Resource, args = {}, dontSendResult = false) => {
     const resourceModifier = args.resourceModifier || false;
 
     return (req, res, next) => {
@@ -137,7 +137,7 @@ const update = (Resource, args, sendResult = false) => {
                 runValidators: true
             })
                 .then((data) => {
-                    sendCrbResult(sendResult, data, req, res, next);
+                    sendCrbResult(dontSendResult, data, req, res, next);
                 })
                 .catch(e => next(Err(400, e.message)));
         }
@@ -150,7 +150,7 @@ const update = (Resource, args, sendResult = false) => {
 /**
  * Creates a new resource object
  */
-const create = (Resource, args, sendResult = false) => {
+const create = (Resource, args = {}, dontSendResult = false) => {
     const resourceModifier = args.resourceModifier || false;
 
     return (req, res, next) => {
@@ -159,7 +159,7 @@ const create = (Resource, args, sendResult = false) => {
             let resource = new R(req.body);
             resource.save()
                 .then((data) => {
-                    sendCrbResult(sendResult, data, req, res, next);
+                    sendCrbResult(dontSendResult, data, req, res, next);
                 })
                 .catch(e => next(Err(400, e.message)));
         }
@@ -172,7 +172,7 @@ const create = (Resource, args, sendResult = false) => {
 /**
  * Deletes a resource by id
  */
-const remove = (Resource, args, sendResult = false) => {
+const remove = (Resource, args = {}, dontSendResult = false) => {
     const resourceModifier = args.resourceModifier || false;
 
     return (req, res, next) => {
@@ -180,7 +180,7 @@ const remove = (Resource, args, sendResult = false) => {
             let R = resourceModifier ? resourceModifier(Resource, req, res) : Resource;
             R.find({_id: req.params.id}).remove().exec()
                 .then((data) => {
-                    sendCrbResult(sendResult, data, req, res, next);
+                    sendCrbResult(dontSendResult, data, req, res, next);
                 });
         }
         catch (e) {
