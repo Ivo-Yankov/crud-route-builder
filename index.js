@@ -233,16 +233,16 @@ const buildRoutes = function (Resource, args = {}) {
     router.get('/all', extractMiddleware(before, 'get', '/all'), getAll(Resource, args, getAllAfterMiddleware), getAllAfterMiddleware);
 
     const getSingleAfterMiddleware = extractMiddleware(after, 'get', '/single/:id');
-    router.get('/single/:id', extractMiddleware(before, 'get', '/single/:id'), getSingle(Resource, args, getAllAfterMiddleware), getSingleAfterMiddleware);
+    router.get('/single/:id', extractMiddleware(before, 'get', '/single/:id'), getSingle(Resource, args, getSingleAfterMiddleware), getSingleAfterMiddleware);
 
     const putAfterMiddleware = extractMiddleware(after, 'put', '/:id');
-    router.put('/:id', extractMiddleware(before, 'put', '/:id'), update(Resource, args, getAllAfterMiddleware), putAfterMiddleware);
+    router.put('/:id', extractMiddleware(before, 'put', '/:id'), update(Resource, args, putAfterMiddleware), putAfterMiddleware);
 
     const postAfterMiddleware = extractMiddleware(after, 'post', '/');
-    router.post('/', extractMiddleware(before, 'post', '/'), create(Resource, args, getAllAfterMiddleware), postAfterMiddleware);
+    router.post('/', extractMiddleware(before, 'post', '/'), create(Resource, args, postAfterMiddleware), postAfterMiddleware);
 
     const deleteAfterMiddleware = extractMiddleware(after, 'delete', '/:id');
-    router.delete('/:id', extractMiddleware(before, 'delete', '/:id'), remove(Resource, args, getAllAfterMiddleware), deleteAfterMiddleware);
+    router.delete('/:id', extractMiddleware(before, 'delete', '/:id'), remove(Resource, args, deleteAfterMiddleware), deleteAfterMiddleware);
 
     return router;
 };
