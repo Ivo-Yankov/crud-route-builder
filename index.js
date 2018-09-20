@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const {Err, isFunction, extractMiddleware, sendCrbResult} = require('./helpers');
 
 const allowedMethods = ['get', 'post', 'put', 'delete'];
@@ -65,6 +66,11 @@ const getAll = (Resource, args = {}, dontSendResult = false) => {
                 // Value is a Bool
                 else if( ["true", "false"].indexOf(val.toLowerCase()) !== -1 ) {
                     filter[f] = val.toLowerCase() === "true";
+                }
+
+                // Value is an ObjectId
+                else if(mongoose.Types.ObjectId.isValid(val)) {
+                    filter[f] = val;
                 }
 
                 // Value is a String
