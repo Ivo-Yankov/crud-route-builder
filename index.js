@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const {Err, isFunction, extractMiddleware, sendCrbResult} = require('./helpers');
+const {isFunction, extractMiddleware, sendCrbResult} = require('./helpers');
 
 const allowedMethods = ['get', 'post', 'put', 'delete'];
 
@@ -100,7 +100,7 @@ const getAll = (Resource, args = {}, dontSendResult = false) => {
 
                     sendCrbResult(dontSendResult, data, req, res, next);
                 })
-                .catch(e => next(Err(400, e.message)));
+                .catch(e => next(e));
         }
         catch (e) {
             next(e);
@@ -121,7 +121,7 @@ const getSingle = (Resource, args = {}, dontSendResult = false) => {
                 .then((data) => {
                     sendCrbResult(dontSendResult, data, req, res, next);
                 })
-                .catch(e => next(Err(400, e.message)));
+                .catch(e => next(e));
         }
         catch (e) {
             next(e);
@@ -145,7 +145,7 @@ const update = (Resource, args = {}, dontSendResult = false) => {
                 .then((data) => {
                     sendCrbResult(dontSendResult, data, req, res, next);
                 })
-                .catch(e => next(Err(400, e.message)));
+                .catch(e => next(e));
         }
         catch (e) {
             next(e);
@@ -167,7 +167,7 @@ const create = (Resource, args = {}, dontSendResult = false) => {
                 .then((data) => {
                     sendCrbResult(dontSendResult, data, req, res, next);
                 })
-                .catch(e => next(Err(400, e.message)));
+                .catch(e => next(e));
         }
         catch (e) {
             next(e);
