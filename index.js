@@ -187,7 +187,8 @@ const remove = (Resource, args = {}, dontSendResult = false) => {
             R.find({_id: req.params.id}).remove().exec()
                 .then((data) => {
                     sendCrbResult(dontSendResult, data, req, res, next);
-                });
+                })
+                .catch(e => next(e));
         }
         catch (e) {
             next(e);
