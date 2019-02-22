@@ -12,5 +12,13 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ivo-Yankov/crud-route-builder.git"
-  }
+  },
+  "keywords": [
+    "crud",
+    "express",
+    "mongoose",
+    "routes",
+    "builder",
+    "basic operations"
+  ]
 }
